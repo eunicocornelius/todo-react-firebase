@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Title from "./components/Title";
 import AddTodo from "./components/AddTodo";
 import Todo from "./components/Todo";
+import Notification from "./components/Notification";
 import {
   collection,
   query,
@@ -52,9 +53,8 @@ function App() {
         <Title />
       </div>
       <div className="flex flex-col justify-center align-middle mx-2 md:mx-36 my-10 gap-5 md:text-xl text-center">
-        <div>
-          <AddTodo />
-        </div>
+        <Notification />
+        <AddTodo todos={todos} />
         <div>
           {todos.map((todo) => {
             return (

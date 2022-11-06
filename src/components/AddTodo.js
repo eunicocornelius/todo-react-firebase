@@ -2,17 +2,22 @@ import React, { useState } from "react";
 import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
 
-export default function AddTodo() {
+export default function AddTodo({ todos }) {
   const [title, setTitle] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (title !== "") {
-      await addDoc(collection(db, "todos"), {
-        title,
-        completed: false,
-      });
-      setTitle("");
+      if (!todos.some((todo) => todo.title === title)) {
+        await addDoc(collection(db, "todos"), {
+          title,
+          completed: false,
+        });
+        setTitle("");
+      } else {
+        //TODO: insert already exist pop-up here
+        console.log("todo has already exist");
+      }
     }
   };
 
