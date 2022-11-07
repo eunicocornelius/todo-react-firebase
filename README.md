@@ -13,4 +13,4 @@
 - Update specific existing todo
 - Delete specific existing todo
 - Automatic sorting based on todo title alphabet
-- Disable creation of duplicate todo
+- Disable creation of case-sensitive duplicate todo

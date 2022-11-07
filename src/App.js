@@ -13,9 +13,12 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import Loading from "./components/Loading";
 
 function App() {
   const [todos, setTodos] = useState([]);
+  const [notif, setNotif] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const q = query(collection(db, "todos"));
@@ -29,6 +32,7 @@ function App() {
         a.title.toLowerCase() > b.title.toLowerCase() ? 1 : -1
       );
       setTodos(todosArray);
+      setLoading(false);
     });
     return () => unsub();
   }, []);
@@ -47,26 +51,34 @@ function App() {
     await deleteDoc(doc(db, "todos", todo.id));
   };
 
+  const handleNotifToggle = (toggle) => {
+    setNotif(toggle);
+  };
+
   return (
     <div className="App h-screen bg-slate-800">
       <div>
         <Title />
       </div>
-      <div className="flex flex-col justify-center align-middle mx-2 md:mx-36 my-10 gap-5 md:text-xl text-center">
-        <Notification />
-        <AddTodo todos={todos} />
+      <div className="flex flex-col justify-center align-middle mx-2 md:mx-36 my-5 md:my-10 gap-5 md:text-xl text-center">
+        <Notification notif={notif} />
+        <AddTodo todos={todos} handleNotifToggle={handleNotifToggle} />
         <div>
-          {todos.map((todo) => {
-            return (
-              <Todo
-                key={todo.id}
-                todo={todo}
-                toggleComplete={toggleComplete}
-                handleDelete={handleDelete}
-                handleEdit={handleEdit}
-              />
-            );
-          })}
+          {loading ? (
+            <Loading />
+          ) : (
+            todos.map((todo) => {
+              return (
+                <Todo
+                  key={todo.id}
+                  todo={todo}
+                  toggleComplete={toggleComplete}
+                  handleDelete={handleDelete}
+                  handleEdit={handleEdit}
+                />
+              );
+            })
+          )}
         </div>
       </div>
     </div>
