@@ -14,11 +14,38 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import Loading from "./components/Loading";
+import * as Realm from "realm-web";
+
+// Instantiate MOngoDB Atlas Application
+const app = new Realm.App({ id: "application-0-qymbc" });
 
 function App() {
   const [todos, setTodos] = useState([]);
   const [notif, setNotif] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  //Declare MongoDB user and events variables
+  const [user, setUser] = useState();
+  const [events, setEvents] = useState([]);
+
+  //Initialize MongoDB anonymous user login
+  useEffect(() => {
+    const login = async () => {
+      //Authenticate anonymously
+      const user = await app.logIn(Realm.Credentials.anonymous());
+      setUser(user);
+
+      //Connect to the MongoDB database
+      const mongodb = app.currentUser.mongoClient("mongodb-atlas");
+      const collection = mongodb.db("data").collection("changestream");
+
+      //Every time change occurs in the system, add the event to list of events
+      for await (const change of collection.watch()) {
+        setEvents((events) => [...events, change]);
+      }
+    };
+    login();
+  }, []);
 
   useEffect(() => {
     const q = query(collection(db, "todos"));
@@ -80,6 +107,29 @@ function App() {
             })
           )}
         </div>
+        {user && (
+          <div className="text-white">
+            <h1>Connected as user ${user.id}</h1>
+            <table>
+              <thead>
+                <tr>
+                  <td>Operation</td>
+                  <td>Document Key</td>
+                  <td>Full Document</td>
+                </tr>
+              </thead>
+              <tbody>
+                {events.map((e, i) => (
+                  <tr key={i}>
+                    <td>{e.operationType}</td>
+                    <td>{e.documentKey._id.toString()}</td>
+                    <td>{JSON.stringify(e.fullDocument)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
